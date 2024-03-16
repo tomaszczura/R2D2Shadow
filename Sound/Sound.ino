@@ -9,20 +9,20 @@
 SoftwareSerial mySerial(9, 10);
 
 // Commands from arduino
-#define START_SOUND "P1\r";
-#define LEFT_PAD_CON "P2\r"
-#define RIGHT_PAD_CON "P3\r"
-#define L1_UP_ARROW "P4\r"
-#define L1_LEFT_ARROW "P5\r"
-#define L1_DOWN_ARROW "P6\r"
-#define L1_RIGHT_ARROW "P7\r"
-#define L2_UP_ARROW "P8\r"
-#define L2_LEFT_ARROW "P9\r"
-#define L2_RIGHT_ARROW "P10\r"
-#define L2_DOWN_ARROW "P11\r"
-#define UP_ARROW "P12\r"
-#define LEFT_ARROW "P13\r"
-#define RIGHT_ARROW "P14\r"
+#define START_SOUND "P1";
+#define LEFT_PAD_CON "P2"
+#define RIGHT_PAD_CON "P3"
+#define L1_UP_ARROW "P4"
+#define L1_LEFT_ARROW "P5"
+#define L1_DOWN_ARROW "P6"
+#define L1_RIGHT_ARROW "P7"
+#define L2_UP_ARROW "P8"
+#define L2_LEFT_ARROW "P9"
+#define L2_RIGHT_ARROW "P10"
+#define L2_DOWN_ARROW "P11"
+#define UP_ARROW "P12"
+#define LEFT_ARROW "P13"
+#define RIGHT_ARROW "P14"
 
 #define CONTROL_LED 3 // pin 5 on ATMEGA
 
@@ -66,12 +66,13 @@ void setup()
 
 void loop()
 {
-  delay(500);
   digitalWrite(CONTROL_LED, HIGH);
+
+  setVolumeFromPotentiometer();
 
   if (Serial.available() > 0)
   {
-    String command = Serial.readStringUntil("\r");
+    String command = Serial.readString();
 
     if (command == LEFT_PAD_CON)
     {
@@ -128,18 +129,31 @@ void loop()
   }
 }
 
+int currentVolume = 0;
+
+void setVolumeFromPotentiometer()
+{
+  int volResistance = analogRead(A5);
+  int vol = map(volResistance, 0, 1023, 0, 30);
+  if (vol != currentVolume)
+  {
+    currentVolume = vol;
+    setVolume(vol);
+  }
+}
+
 void initializePlayer()
 {
   execute_CMD(INITIALIZE_PLAYER, 0, 0);
-  delay(500);
-  setVolume(20);
-  delay(500);
+  delay(200);
+  setVolumeFromPotentiometer();
+  delay(200);
 }
 
 void playTrack(int track)
 {
   execute_CMD(PLAY_TRACK, 0, track);
-  delay(500);
+  delay(200);
 }
 
 void pause()
