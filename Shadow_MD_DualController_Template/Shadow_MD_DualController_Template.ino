@@ -78,20 +78,20 @@ int time360DomeTurn = 2500; // milliseconds for dome to complete 360 turn at dom
 #define SHADOW_VERBOSE // uncomment this for console VERBOSE output
 
 /// ------------ DFPlayer commands
-#define START_SOUND "P1\r";
-#define LEFT_PAD_CON "P2\r"
-#define RIGHT_PAD_CON "P3\r"
-#define L1_UP_ARROW "P4\r"
-#define L1_LEFT_ARROW "P5\r"
-#define L1_DOWN_ARROW "P6\r"
-#define L1_RIGHT_ARROW "P7\r"
-#define L2_UP_ARROW "P8\r"
-#define L2_LEFT_ARROW "P9\r"
-#define L2_RIGHT_ARROW "P10\r"
-#define L2_DOWN_ARROW "P11\r"
-#define UP_ARROW "P12\r"
-#define LEFT_ARROW "P13\r"
-#define RIGHT_ARROW "P14\r"
+#define START_SOUND "P1";
+#define LEFT_PAD_CON "P2"
+#define RIGHT_PAD_CON "P3"
+#define L1_UP_ARROW "P4"
+#define L1_LEFT_ARROW "P5"
+#define L1_DOWN_ARROW "P6"
+#define L1_RIGHT_ARROW "P7"
+#define L2_UP_ARROW "P8"
+#define L2_LEFT_ARROW "P9"
+#define L2_RIGHT_ARROW "P10"
+#define L2_DOWN_ARROW "P11"
+#define UP_ARROW "P12"
+#define LEFT_ARROW "P13"
+#define RIGHT_ARROW "P14"
 
 // ---------------------------------------------------------------------------------------
 //                          MarcDuino Button Settings
@@ -1842,7 +1842,7 @@ unsigned long DriveMillis = 0;
 
 int footDriveSpeed = 0;
 
-SoftwareSerial dfPlayerSerial(22, 23);
+SoftwareSerial dfPlayerSerial(10, 11);
 
 // =======================================================================================
 //                          Main Program
@@ -3243,7 +3243,7 @@ void marcDuinoFoot()
   if (PS3NavFoot->PS3NavigationConnected && (PS3NavFoot->getButtonPress(UP) || PS3NavFoot->getButtonPress(DOWN) || PS3NavFoot->getButtonPress(LEFT) || PS3NavFoot->getButtonPress(RIGHT)))
   {
 
-    if ((millis() - previousMarcDuinoMillis) > 1000)
+    if ((millis() - previousMarcDuinoMillis) > 500)
     {
       marcDuinoButtonCounter = 0;
       previousMarcDuinoMillis = millis();
@@ -3259,6 +3259,44 @@ void marcDuinoFoot()
   // Clear inbound buffer of any data sent form the MarcDuino board
   while (Serial1.available())
     Serial1.read();
+
+  /**
+   * Send triggers for L2 + arrow buttons
+   */
+  if (PS3NavFoot->getButtonPress(L2) && marcDuinoButtonCounter == 1)
+  {
+    if (PS3NavFoot->getButtonPress(LEFT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnLeft_L2";
+#endif
+      dfPlayerSerial.write(L2_LEFT_ARROW);
+    }
+    else if (PS3NavFoot->getButtonPress(RIGHT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnRight_L2";
+#endif
+      dfPlayerSerial.write(L2_RIGHT_ARROW);
+      return;
+    }
+    else if (PS3NavFoot->getButtonPress(UP))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnUp_L2";
+#endif
+      dfPlayerSerial.write(L2_UP_ARROW);
+      return;
+    }
+    else if (PS3NavFoot->getButtonPress(DOWN))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnDown_L2";
+#endif
+      dfPlayerSerial.write(L2_DOWN_ARROW);
+      return;
+    }
+  }
 
   //------------------------------------
   // Send triggers for the base buttons
@@ -3886,38 +3924,6 @@ void marcDuinoFoot()
 #endif
     dfPlayerSerial.write(L1_DOWN_ARROW);
     return;
-  }
-
-  if (PS3NavFoot->getButtonPress(L2))
-  {
-    if (PS3NavFoot->getButtonPress(LEFT))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: L2_LEFT_ARROW";
-#endif
-      dfPlayerSerial.write(L2_LEFT_ARROW);
-    }
-    else if (PS3NavFoot->getButtonPress(RIGHT))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: L2_RIGHT_ARROW";
-#endif
-      dfPlayerSerial.write(L2_RIGHT_ARROW);
-    }
-    else if (PS3NavFoot->getButtonPress(UP))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: L2_UP_ARROW";
-#endif
-      dfPlayerSerial.write(L2_UP_ARROW);
-    }
-    else if (PS3NavFoot->getButtonPress(DOWN))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: L2_DOWN_ARROW";
-#endif
-      dfPlayerSerial.write(L2_DOWN_ARROW);
-    }
   }
 
   if (PS3NavFoot->getButtonPress(LEFT) && PS3NavFoot->getButtonPress(L1) && marcDuinoButtonCounter == 1)
