@@ -1842,7 +1842,7 @@ unsigned long DriveMillis = 0;
 
 int footDriveSpeed = 0;
 
-SoftwareSerial dfPlayerSerial(10, 11);
+SoftwareSerial dfPlayerSerial(22, 23);
 
 // =======================================================================================
 //                          Main Program
@@ -3271,6 +3271,7 @@ void marcDuinoFoot()
       output += "FOOT: btnLeft_L2";
 #endif
       dfPlayerSerial.write(L2_LEFT_ARROW);
+      return;
     }
     else if (PS3NavFoot->getButtonPress(RIGHT))
     {
