@@ -3235,6 +3235,45 @@ void marcDuinoButtonPush(int type, int MD_func, int MP3_num, int LD_type, String
   }
 }
 
+void handleBodyL2IfPressed() : bool
+{
+  if (PS3NavFoot->getButtonPress(L2) && marcDuinoButtonCounter == 1)
+  {
+    if (PS3NavFoot->getButtonPress(LEFT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnLeft_L2";
+#endif
+      dfPlayerSerial.write(L2_LEFT_ARROW);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(RIGHT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnRight_L2";
+#endif
+      dfPlayerSerial.write(L2_RIGHT_ARROW);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(UP))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnUp_L2";
+#endif
+      dfPlayerSerial.write(L2_UP_ARROW);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(DOWN))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnDown_L2";
+#endif
+      dfPlayerSerial.write(L2_DOWN_ARROW);
+      return true;
+    }
+  }
+}
+
 // ====================================================================================================================
 // This function determines if MarcDuino buttons were selected and calls main processing function for FOOT controller
 // ====================================================================================================================
@@ -3258,45 +3297,18 @@ void marcDuinoFoot()
 
   // Clear inbound buffer of any data sent form the MarcDuino board
   while (Serial1.available())
+  {
     Serial1.read();
+  }
 
   /**
    * Send triggers for L2 + arrow buttons
    */
-  if (PS3NavFoot->getButtonPress(L2) && marcDuinoButtonCounter == 1)
+  bool handled = handleBodyL2IfPressed();
+
+  if (handled)
   {
-    if (PS3NavFoot->getButtonPress(LEFT))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnLeft_L2";
-#endif
-      dfPlayerSerial.write(L2_LEFT_ARROW);
-      return;
-    }
-    else if (PS3NavFoot->getButtonPress(RIGHT))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnRight_L2";
-#endif
-      dfPlayerSerial.write(L2_RIGHT_ARROW);
-      return;
-    }
-    else if (PS3NavFoot->getButtonPress(UP))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnUp_L2";
-#endif
-      dfPlayerSerial.write(L2_UP_ARROW);
-      return;
-    }
-    else if (PS3NavFoot->getButtonPress(DOWN))
-    {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnDown_L2";
-#endif
-      dfPlayerSerial.write(L2_DOWN_ARROW);
-      return;
-    }
+    return;
   }
 
   //------------------------------------
