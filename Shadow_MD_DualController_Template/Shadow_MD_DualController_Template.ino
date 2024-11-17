@@ -78,20 +78,20 @@ int time360DomeTurn = 2500; // milliseconds for dome to complete 360 turn at dom
 #define SHADOW_VERBOSE // uncomment this for console VERBOSE output
 
 /// ------------ DFPlayer commands
-#define START_SOUND "P1";
-#define LEFT_PAD_CON "P2"
-#define RIGHT_PAD_CON "P3"
-#define L1_UP_ARROW "P4"
-#define L1_LEFT_ARROW "P5"
-#define L1_DOWN_ARROW "P6"
-#define L1_RIGHT_ARROW "P7"
-#define L2_UP_ARROW "P8"
-#define L2_LEFT_ARROW "P9"
-#define L2_RIGHT_ARROW "P10"
-#define L2_DOWN_ARROW "P11"
-#define UP_ARROW "P12"
-#define LEFT_ARROW "P13"
-#define RIGHT_ARROW "P14"
+// #define START_SOUND "P1";
+// #define LEFT_PAD_CON "P2"
+// #define RIGHT_PAD_CON "P3"
+// #define ALARM_SOUND "P4"
+// #define MISC_SOUND "P5"
+// #define OOH_SOUND "P6"
+// #define SENT_SOUND "P7"
+// #define SCREAM_SOUND "P8"
+// #define CHORTLE_SOUND "P9"
+// #define WOLF_SOUND "P10"
+// #define ANNOYED_SOUND "P11"
+// #define DOO_DOO_SOUND "P12"
+// #define SHORT_SOUND "P13"
+// #define PATROL_SOUND "P14"
 
 // ---------------------------------------------------------------------------------------
 //                          MarcDuino Button Settings
@@ -1720,6 +1720,8 @@ int marcDuinoBaudRate = 9600; // Set the baud rate for the Syren motor controlle
 
 #include "SoftwareSerial.h"
 
+#include "R2D2Commands.h"
+
 // ---------------------------------------------------------------------------------------
 //                    Panel Management Variables
 // ---------------------------------------------------------------------------------------
@@ -1843,6 +1845,8 @@ unsigned long DriveMillis = 0;
 int footDriveSpeed = 0;
 
 SoftwareSerial dfPlayerSerial(22, 23);
+
+HardwareSerial *BodyMasterSerial = &Serial1;
 
 // =======================================================================================
 //                          Main Program
@@ -3235,16 +3239,57 @@ void marcDuinoButtonPush(int type, int MD_func, int MP3_num, int LD_type, String
   }
 }
 
-void handleBodyL2IfPressed() : bool
+bool handleSoundModuleControl()
 {
-  if (PS3NavFoot->getButtonPress(L2) && marcDuinoButtonCounter == 1)
+  if (marcDuinoButtonCounter != 1)
+  {
+    return false;
+  }
+
+  if (PS3NavFoot->getButtonPress(L1))
+  {
+    if (PS3NavFoot->getButtonPress(LEFT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnLeft_L1";
+#endif
+      dfPlayerSerial.write(MISC_SOUND);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(RIGHT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnRight_L1";
+#endif
+      dfPlayerSerial.write(SENT_SOUND);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(UP))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnUp_L1";
+#endif
+      dfPlayerSerial.write(ALARM_SOUND);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(DOWN))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "FOOT: btnDown_L1";
+#endif
+      dfPlayerSerial.write(OOH_SOUND);
+      return true;
+    }
+  }
+
+  if (PS3NavFoot->getButtonPress(L2))
   {
     if (PS3NavFoot->getButtonPress(LEFT))
     {
 #ifdef SHADOW_VERBOSE
       output += "FOOT: btnLeft_L2";
 #endif
-      dfPlayerSerial.write(L2_LEFT_ARROW);
+      dfPlayerSerial.write(CHORTLE_SOUND);
       return true;
     }
     else if (PS3NavFoot->getButtonPress(RIGHT))
@@ -3252,7 +3297,7 @@ void handleBodyL2IfPressed() : bool
 #ifdef SHADOW_VERBOSE
       output += "FOOT: btnRight_L2";
 #endif
-      dfPlayerSerial.write(L2_RIGHT_ARROW);
+      dfPlayerSerial.write(WOLF_SOUND);
       return true;
     }
     else if (PS3NavFoot->getButtonPress(UP))
@@ -3260,7 +3305,7 @@ void handleBodyL2IfPressed() : bool
 #ifdef SHADOW_VERBOSE
       output += "FOOT: btnUp_L2";
 #endif
-      dfPlayerSerial.write(L2_UP_ARROW);
+      dfPlayerSerial.write(SCREAM_SOUND);
       return true;
     }
     else if (PS3NavFoot->getButtonPress(DOWN))
@@ -3268,9 +3313,83 @@ void handleBodyL2IfPressed() : bool
 #ifdef SHADOW_VERBOSE
       output += "FOOT: btnDown_L2";
 #endif
-      dfPlayerSerial.write(L2_DOWN_ARROW);
+      dfPlayerSerial.write(ANNOYED_SOUND);
       return true;
     }
+  }
+
+  if (PS3NavDome->getButtonPress(L1))
+  {
+    if (PS3NavFoot->getButtonPress(LEFT))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "DOME: btnLeft_L1";
+#endif
+      dfPlayerSerial.write(SHORT_SOUND);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(UP))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "DOME: btnUp_L1";
+#endif
+      dfPlayerSerial.write(DOO_DOO_SOUND);
+      return true;
+    }
+    else if (PS3NavFoot->getButtonPress(DOWN))
+    {
+#ifdef SHADOW_VERBOSE
+      output += "DOME: btnDown_L1";
+#endif
+      dfPlayerSerial.write(PATROL_SOUND);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool handleBodyMasterControl()
+{
+  if (marcDuinoButtonCounter != 1)
+  {
+    return false;
+  }
+
+  if (PS3NavFoot->getButtonPress(CROSS))
+  {
+#ifdef SHADOW_VERBOSE
+    output += "FOOT: Cross";
+#endif
+    BodyMasterSerial.write(TOGGLE_INTERFACE_ARM);
+    return true;
+  }
+
+  if (PS3NavFoot->getButtonPress(LEFT))
+  {
+#ifdef SHADOW_VERBOSE
+    output += "FOOT: Left";
+#endif
+    BodyMasterSerial.write(ROTATE_INTERFACE_ARM);
+    return true;
+  }
+
+  if (PS3NavFoot->getButtonPress(CIRCLE))
+  {
+#ifdef SHADOW_VERBOSE
+    output += "FOOT: Circle";
+#endif
+    BodyMasterSerial.write(TOGGLE_GRIPPER_ARM);
+    return true;
+  }
+
+  if (PS3NavFoot->getButtonPress(RIGHT))
+  {
+#ifdef SHADOW_VERBOSE
+    output += "FOOT: Right";
+#endif
+    BodyMasterSerial.write(CONTROL_GRIPPER_ARM);
+    return true;
   }
 }
 
@@ -3304,7 +3423,12 @@ void marcDuinoFoot()
   /**
    * Send triggers for L2 + arrow buttons
    */
-  bool handled = handleBodyL2IfPressed();
+  bool handled = handleSoundModuleControl();
+
+  if (!handled)
+  {
+    handled = handleBodyMasterControl();
+  }
 
   if (handled)
   {
@@ -3354,12 +3478,6 @@ void marcDuinoFoot()
                           btnUP_use_DP10,
                           btnUP_DP10_open_start_delay,
                           btnUP_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnUP";
-#endif
-      dfPlayerSerial.write(UP_ARROW);
-      return;
     }
   }
 
@@ -3451,12 +3569,6 @@ void marcDuinoFoot()
                           btnLeft_use_DP10,
                           btnLeft_DP10_open_start_delay,
                           btnLeft_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnLeft";
-#endif
-      dfPlayerSerial.write(LEFT_ARROW);
-      return;
     }
   }
 
@@ -3500,12 +3612,6 @@ void marcDuinoFoot()
                           btnRight_use_DP10,
                           btnRight_DP10_open_start_delay,
                           btnRight_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnRight";
-#endif
-      dfPlayerSerial.write(RIGHT_ARROW);
-      return;
     }
   }
 
@@ -3888,13 +3994,6 @@ void marcDuinoFoot()
                         btnUP_L1_use_DP10,
                         btnUP_L1_DP10_open_start_delay,
                         btnUP_L1_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: btnUP_L1";
-#endif
-
-    dfPlayerSerial.write(L1_UP_ARROW);
-    return;
   }
 
   if (PS3NavFoot->getButtonPress(DOWN) && PS3NavFoot->getButtonPress(L1) && marcDuinoButtonCounter == 1)
@@ -3931,12 +4030,6 @@ void marcDuinoFoot()
                         btnDown_L1_use_DP10,
                         btnDown_L1_DP10_open_start_delay,
                         btnDown_L1_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: btnDown_L1";
-#endif
-    dfPlayerSerial.write(L1_DOWN_ARROW);
-    return;
   }
 
   if (PS3NavFoot->getButtonPress(LEFT) && PS3NavFoot->getButtonPress(L1) && marcDuinoButtonCounter == 1)
@@ -3973,12 +4066,6 @@ void marcDuinoFoot()
                         btnLeft_L1_use_DP10,
                         btnLeft_L1_DP10_open_start_delay,
                         btnLeft_L1_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: btnLeft_L1";
-#endif
-    dfPlayerSerial.write(L1_LEFT_ARROW);
-    return;
   }
 
   if (PS3NavFoot->getButtonPress(RIGHT) && PS3NavFoot->getButtonPress(L1) && marcDuinoButtonCounter == 1)
@@ -4015,12 +4102,6 @@ void marcDuinoFoot()
                         btnRight_L1_use_DP10,
                         btnRight_L1_DP10_open_start_delay,
                         btnRight_L1_DP10_stay_open_time);
-
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: btnRight_L1";
-#endif
-    dfPlayerSerial.write(L1_RIGHT_ARROW);
-    return;
   }
 
   //------------------------------------

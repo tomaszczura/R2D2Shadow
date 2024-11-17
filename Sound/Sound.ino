@@ -1,4 +1,5 @@
 #include "SoftwareSerial.h"
+#include "R2D2Commands.h"
 
 #define Start_Byte 0x7E
 #define Version_Byte 0xFF
@@ -8,21 +9,21 @@
 
 SoftwareSerial mySerial(9, 10);
 
-// Commands from arduino
-#define START_SOUND "P1";
-#define LEFT_PAD_CON "P2"
-#define RIGHT_PAD_CON "P3"
-#define L1_UP_ARROW "P4"
-#define L1_LEFT_ARROW "P5"
-#define L1_DOWN_ARROW "P6"
-#define L1_RIGHT_ARROW "P7"
-#define L2_UP_ARROW "P8"
-#define L2_LEFT_ARROW "P9"
-#define L2_RIGHT_ARROW "P10"
-#define L2_DOWN_ARROW "P11"
-#define UP_ARROW "P12"
-#define LEFT_ARROW "P13"
-#define RIGHT_ARROW "P14"
+// // Commands from arduino
+// #define START_SOUND "P1";
+// #define LEFT_PAD_CON "P2"
+// #define RIGHT_PAD_CON "P3"
+// #define ALARM_SOUND "P4"
+// #define MISC_SOUND "P5"
+// #define OOH_SOUND "P6"
+// #define SENT_SOUND "P7"
+// #define SCREAM_SOUND "P8"
+// #define CHORTLE_SOUND "P9"
+// #define WOLF_SOUND "P10"
+// #define ANNOYED_SOUND "P11"
+// #define DOO_DOO_SOUND "P12"
+// #define SHORT_SOUND "P13"
+// #define PATROL_SOUND "P14"
 
 #define CONTROL_LED 3 // pin 5 on ATMEGA
 
@@ -82,47 +83,47 @@ void loop()
     {
       playTrack(33 + OFFSET);
     }
-    else if (command == L1_UP_ARROW)
+    else if (command == ALARM_SOUND)
     {
       playTrack(random(13, 17) + OFFSET);
     }
-    else if (command == L1_LEFT_ARROW)
+    else if (command == MISC_SOUND)
     {
       playTrack(random(17, 25) + OFFSET);
     }
-    else if (command == L1_DOWN_ARROW)
+    else if (command == OOH_SOUND)
     {
       playTrack(random(25, 32) + OFFSET);
     }
-    else if (command == L1_RIGHT_ARROW)
+    else if (command == SENT_SOUND)
     {
       playTrack(random(32, 54) + OFFSET);
     }
-    else if (command == L2_UP_ARROW)
+    else if (command == SCREAM_SOUND)
     {
       playTrack(1 + OFFSET);
     }
-    else if (command == L2_LEFT_ARROW)
+    else if (command == CHORTLE_SOUND)
     {
       playTrack(2 + OFFSET);
     }
-    else if (command == L2_RIGHT_ARROW)
+    else if (command == WOLF_SOUND)
     {
       playTrack(4 + OFFSET);
     }
-    else if (command == L2_DOWN_ARROW)
+    else if (command == ANNOYED_SOUND)
     {
       playTrack(8 + OFFSET);
     }
-    else if (command == UP_ARROW)
+    else if (command == DOO_DOO_SOUND)
     {
       playTrack(3 + OFFSET);
     }
-    else if (command == LEFT_ARROW)
+    else if (command == SHORT_SOUND)
     {
       playTrack(6 + OFFSET);
     }
-    else if (command == RIGHT_ARROW)
+    else if (command == PATROL_SOUND)
     {
       playTrack(7 + OFFSET);
     }
