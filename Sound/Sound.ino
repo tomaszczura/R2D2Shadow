@@ -7,23 +7,7 @@
 #define End_Byte 0xEF
 #define Acknowledge 0x00 // Returns info with command 0x41 [0x01: info, 0x00: no info]
 
-SoftwareSerial mySerial(9, 10);
-
-// // Commands from arduino
-// #define START_SOUND "P1";
-// #define LEFT_PAD_CON "P2"
-// #define RIGHT_PAD_CON "P3"
-// #define ALARM_SOUND "P4"
-// #define MISC_SOUND "P5"
-// #define OOH_SOUND "P6"
-// #define SENT_SOUND "P7"
-// #define SCREAM_SOUND "P8"
-// #define CHORTLE_SOUND "P9"
-// #define WOLF_SOUND "P10"
-// #define ANNOYED_SOUND "P11"
-// #define DOO_DOO_SOUND "P12"
-// #define SHORT_SOUND "P13"
-// #define PATROL_SOUND "P14"
+SoftwareSerial dpfPlayerSerial(9, 10);
 
 #define CONTROL_LED 3 // pin 5 on ATMEGA
 
@@ -59,7 +43,7 @@ SoftwareSerial mySerial(9, 10);
 void setup()
 {
   pinMode(CONTROL_LED, OUTPUT);
-  mySerial.begin(9600);
+  dpfPlayerSerial.begin(9600);
   Serial.begin(9600);
   initializePlayer();
   playTrack(14 + OFFSET); // play initial sound
@@ -194,6 +178,6 @@ void execute_CMD(byte CMD, byte Par1, byte Par2)
   // Send the command line to the module
   for (byte k = 0; k < 10; k++)
   {
-    mySerial.write(Command_line[k]);
+    dpfPlayerSerial.write(Command_line[k]);
   }
 }

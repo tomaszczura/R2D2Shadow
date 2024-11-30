@@ -24,6 +24,9 @@
  * 3 2 1
  * 6 5 4
  *
+ * RST SCK  MISO
+ * GND MOSI VCC
+ *
  * 1 - MISO
  * 2 - SCK
  * 3 - RST
@@ -68,7 +71,7 @@ Adafruit_PWMServoDriver pcaBoard = Adafruit_PWMServoDriver(0x40);
 #define UTILITY_ARM_CLOSED 0 // angle for utility arm closed
 #define UTILITY_ARM_OPEN 180 // angle for utility arm open
 
-#define DOORS_CLOSE_DELAY 1000 // delay for door close
+#define DOORS_DELAY 1000 // delay for door close
 
 #pragma endregion
 
@@ -80,6 +83,7 @@ void setup()
   pcaBoard.setPWMFreq(60); // Analog servos run at ~60 Hz updates
 
   closeInterfaceArm();
+  closeGripperArm();
 }
 
 void loop()
@@ -88,7 +92,7 @@ void loop()
 
   // setMotorAngle(INTERFACE_CONTROL, INTERFACE_ARM_MAX);
   // setMotorAngle(INTERFACE_ARM, ARM_UP);
-  // delay(DOORS_CLOSE_DELAY);
+  // delay(DOORS_DELAY);
   // setMotorAngle(INTERFACE_DOORS, DOORS_OPEN);
 
   // openInterfaceArm();
@@ -111,13 +115,28 @@ void closeInterfaceArm()
 {
   setMotorAngle(INTERFACE_CONTROL, INTERFACE_ARM_MIN);
   setMotorAngle(INTERFACE_ARM, ARM_DOWN);
-  delay(DOORS_CLOSE_DELAY);
+  delay(DOORS_DELAY);
   setMotorAngle(INTERFACE_DOORS, DOORS_CLOSE);
 }
 
 void openInterfaceArm()
 {
   setMotorAngle(INTERFACE_DOORS, DOORS_OPEN);
-  delay(DOORS_CLOSE_DELAY);
+  delay(DOORS_DELAY);
   setMotorAngle(INTERFACE_ARM, ARM_UP);
+}
+
+void closeGripperArm()
+{
+  setMotorAngle(GRIPPER_CONTROL, GRIPPER_ARM_CLOSED);
+  setMotorAngle(GRIPPER_ARM, ARM_DOWN);
+  delay(DOORS_DELAY);
+  setMotorAngle(GRIPPER_DOORS, DOORS_CLOSE);
+}
+
+void openGripperArm()
+{
+  setMotorAngle(GRIPPER_DOORS, DOORS_OPEN);
+  delay(DOORS_DELAY);
+  setMotorAngle(GRIPPER_ARM, ARM_UP);
 }

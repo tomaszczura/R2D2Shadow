@@ -1923,8 +1923,8 @@ void loop()
 
   footMotorDrive();
   domeDrive();
-  marcDuinoDome();
-  marcDuinoFoot();
+  // marcDuinoDome();
+  marcDuinoBody();
   toggleSettings();
   printOutput();
 
@@ -3239,44 +3239,38 @@ void marcDuinoButtonPush(int type, int MD_func, int MP3_num, int LD_type, String
   }
 }
 
+void addStringToOutput(String str)
+{
+#ifdef SHADOW_VERBOSE
+  output += str;
+#endif
+}
+
 bool handleSoundModuleControl()
 {
-  if (marcDuinoButtonCounter != 1)
-  {
-    return false;
-  }
-
   if (PS3NavFoot->getButtonPress(L1))
   {
-    if (PS3NavFoot->getButtonPress(LEFT))
+    if (PS3NavFoot->getButtonClick(LEFT))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnLeft_L1";
-#endif
+      addStringToOutput("FOOT: btnLeft_L1 click");
       dfPlayerSerial.write(MISC_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(RIGHT))
+    else if (PS3NavFoot->getButtonClick(RIGHT))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnRight_L1";
-#endif
+      addStringToOutput("FOOT: btnRight_L1 click");
       dfPlayerSerial.write(SENT_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(UP))
+    else if (PS3NavFoot->getButtonClick(UP))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnUp_L1";
-#endif
+      addStringToOutput("FOOT: btnUp_L1 click");
       dfPlayerSerial.write(ALARM_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(DOWN))
+    else if (PS3NavFoot->getButtonClick(DOWN))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnDown_L1";
-#endif
+      addStringToOutput("FOOT: btnDown_L1 click");
       dfPlayerSerial.write(OOH_SOUND);
       return true;
     }
@@ -3284,35 +3278,27 @@ bool handleSoundModuleControl()
 
   if (PS3NavFoot->getButtonPress(L2))
   {
-    if (PS3NavFoot->getButtonPress(LEFT))
+    if (PS3NavFoot->getButtonClick(LEFT))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnLeft_L2";
-#endif
+      addStringToOutput("FOOT: btnLeft_L2 click");
       dfPlayerSerial.write(CHORTLE_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(RIGHT))
+    else if (PS3NavFoot->getButtonClick(RIGHT))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnRight_L2";
-#endif
+      addStringToOutput("FOOT: btnRight_L2 click");
       dfPlayerSerial.write(WOLF_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(UP))
+    else if (PS3NavFoot->getButtonClick(UP))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnUp_L2";
-#endif
+      addStringToOutput("FOOT: btnUp_L2 click");
       dfPlayerSerial.write(SCREAM_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(DOWN))
+    else if (PS3NavFoot->getButtonClick(DOWN))
     {
-#ifdef SHADOW_VERBOSE
-      output += "FOOT: btnDown_L2";
-#endif
+      addStringToOutput("FOOT: btnDown_L2 click");
       dfPlayerSerial.write(ANNOYED_SOUND);
       return true;
     }
@@ -3320,27 +3306,21 @@ bool handleSoundModuleControl()
 
   if (PS3NavDome->getButtonPress(L1))
   {
-    if (PS3NavFoot->getButtonPress(LEFT))
+    if (PS3NavFoot->getButtonClick(LEFT))
     {
-#ifdef SHADOW_VERBOSE
-      output += "DOME: btnLeft_L1";
-#endif
+      addStringToOutput("FOOT: btnLeft_DomeL1 click");
       dfPlayerSerial.write(SHORT_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(UP))
+    else if (PS3NavFoot->getButtonClick(UP))
     {
-#ifdef SHADOW_VERBOSE
-      output += "DOME: btnUp_L1";
-#endif
+      addStringToOutput("FOOT: btnUp_DomeL1 click");
       dfPlayerSerial.write(DOO_DOO_SOUND);
       return true;
     }
-    else if (PS3NavFoot->getButtonPress(DOWN))
+    else if (PS3NavFoot->getButtonClick(DOWN))
     {
-#ifdef SHADOW_VERBOSE
-      output += "DOME: btnDown_L1";
-#endif
+      addStringToOutput("FOOT: btnDown_DomeL1 click");
       dfPlayerSerial.write(PATROL_SOUND);
       return true;
     }
@@ -3351,52 +3331,99 @@ bool handleSoundModuleControl()
 
 bool handleBodyMasterControl()
 {
-  if (marcDuinoButtonCounter != 1)
+  if (PS3NavFoot->getButtonClick(CIRCLE))
   {
-    return false;
+    addStringToOutput("FOOT: Circle");
+    BodyMasterSerial->write(TOGGLE_GRIPPER_ARM);
+    return;
   }
 
-  if (PS3NavFoot->getButtonPress(CROSS))
+  if (PS3NavFoot->getButtonClick(CROSS))
   {
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: Cross";
-#endif
-    BodyMasterSerial.write(TOGGLE_INTERFACE_ARM);
+    addStringToOutput("FOOT: Cross");
+    BodyMasterSerial->write(TOGGLE_INTERFACE_ARM);
+    return;
+  }
+
+  if (PS3NavFoot->getButtonClick(LEFT))
+  {
+    addStringToOutput("FOOT: Left click");
+    BodyMasterSerial->write(ROTATE_INTERFACE_ARM);
     return true;
   }
 
-  if (PS3NavFoot->getButtonPress(LEFT))
+  if (PS3NavFoot->getButtonClick(RIGHT))
   {
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: Left";
-#endif
-    BodyMasterSerial.write(ROTATE_INTERFACE_ARM);
+    addStringToOutput("FOOT: Right click");
+    BodyMasterSerial->write(CONTROL_GRIPPER_ARM);
     return true;
   }
 
-  if (PS3NavFoot->getButtonPress(CIRCLE))
+  if (PS3NavFoot->getButtonClick(UP))
   {
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: Circle";
-#endif
-    BodyMasterSerial.write(TOGGLE_GRIPPER_ARM);
+    addStringToOutput("FOOT: Up click");
+    BodyMasterSerial->write(TOGGLE_UTILITY_ARM_1);
     return true;
   }
 
-  if (PS3NavFoot->getButtonPress(RIGHT))
+  if (PS3NavFoot->getButtonClick(DOWN))
   {
-#ifdef SHADOW_VERBOSE
-    output += "FOOT: Right";
-#endif
-    BodyMasterSerial.write(CONTROL_GRIPPER_ARM);
+    addStringToOutput("FOOT: Down click");
+    BodyMasterSerial->write(TOGGLE_UTILITY_ARM_2);
     return true;
+  }
+
+  return false;
+}
+
+bool isArrowKeyPressed()
+{
+  return PS3NavFoot->getButtonPress(UP) || PS3NavFoot->getButtonPress(DOWN) || PS3NavFoot->getButtonPress(LEFT) || PS3NavFoot->getButtonPress(RIGHT);
+}
+
+void marcDuinoBody()
+{
+  if (PS3NavFoot->PS3NavigationConnected)
+  {
+    if (isArrowKeyPressed())
+    {
+      if ((millis() - previousMarcDuinoMillis) > 500)
+      {
+        marcDuinoButtonCounter = 0;
+        previousMarcDuinoMillis = millis();
+      }
+
+      marcDuinoButtonCounter += 1;
+    }
+  }
+  else
+  {
+    return;
+  }
+
+  // Clear inbound buffer of any data sent form the MarcDuino board
+  while (Serial1.available())
+  {
+    Serial1.read();
+  }
+
+  bool handled = handleSoundModuleControl();
+
+  if (!handled)
+  {
+    handled = handleBodyMasterControl();
+  }
+
+  if (handled)
+  {
+    return;
   }
 }
 
 // ====================================================================================================================
-// This function determines if MarcDuino buttons were selected and calls main processing function for FOOT controller
+// UNUSED - This function determines if MarcDuino buttons were selected and calls main processing function for FOOT controller
 // ====================================================================================================================
-void marcDuinoFoot()
+void marcDuinoFootOld()
 {
   if (PS3NavFoot->PS3NavigationConnected && (PS3NavFoot->getButtonPress(UP) || PS3NavFoot->getButtonPress(DOWN) || PS3NavFoot->getButtonPress(LEFT) || PS3NavFoot->getButtonPress(RIGHT)))
   {
@@ -5866,7 +5893,7 @@ boolean readUSB()
   {
     if (criticalFaultDetect())
     {
-      // We have a fault condition that we want to ensure that we do NOT process any controller data!!!
+      // We have a fault condition that we want to ensure that we do NOT process any controller data
       printOutput();
       return false;
     }
@@ -5888,7 +5915,7 @@ boolean readUSB()
 
     if (criticalFaultDetectDome())
     {
-      // We have a fault condition that we want to ensure that we do NOT process any controller data!!!
+      // We have a fault condition that we want to ensure that we do NOT process any controller data
       printOutput();
       return false;
     }
@@ -5906,7 +5933,10 @@ void printOutput()
   if (output != "")
   {
     if (Serial)
+    {
       Serial.println(output);
+    }
+
     output = ""; // Reset output string
   }
 }
