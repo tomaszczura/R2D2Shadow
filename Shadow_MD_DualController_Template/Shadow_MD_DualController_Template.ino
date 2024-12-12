@@ -3355,7 +3355,7 @@ bool handleBodyMasterControl()
   if (PS3NavFoot->getButtonClick(RIGHT))
   {
     addStringToOutput("FOOT: Right click");
-    BodyMasterSerial->write(CONTROL_GRIPPER_ARM);
+    BodyMasterSerial->write(CONTROL_GRIPPER);
     return true;
   }
 

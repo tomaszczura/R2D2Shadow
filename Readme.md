@@ -65,7 +65,7 @@ Body master connects SCL, SDA, GND and VCC to corresponding PCA9685 pins
 | TOGGLE_INTERFACE_ARM     | BM_TIA | Toggles the interface arm    |
 | ROTATE_INTERFACE_ARM     | BM_SIA | Rotates the interface arm    |
 | TOGGLE_GRIPPER_ARM       | BM_TGA  | Toggles the gripper arm      |
-| CONTROL_GRIPPER_ARM     | BM_CGA  | Controls (open/close) the gripper arm    |
+| CONTROL_GRIPPER     | BM_CGA  | Controls (open/close) the gripper arm    |
 | TOGGLE_UTILITY_ARM_1   | BM_TU1 | Toggles utility arm 1      |
 | TOGGLE_UTILITY_ARM_2   | BM_TU2 | Toggles utility arm 2      |
 

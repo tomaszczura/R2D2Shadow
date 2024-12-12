@@ -1,4 +1,7 @@
+#include <Servo.h>
+
 #include <Adafruit_PWMServoDriver.h>
+#include "R2D2Commands.h"
 
 /** Marcduino port mapping
  * ATMEGA -> ARDUINO -> MARCDUINO
@@ -40,7 +43,7 @@
 Adafruit_PWMServoDriver pcaBoard = Adafruit_PWMServoDriver(0x40);
 
 #define SERVOMIN 100 // this is the 'minimum' pulse length count (out of 4096)
-#define SERVOMAX 588 // this is the 'maximum' pulse length count (out of 4096)
+#define SERVOMAX 480 // this is the 'maximum' pulse length count (out of 4096)
 
 // PCA9685 board addresses
 #pragma region "PCA9685 board addresses"
@@ -50,8 +53,8 @@ Adafruit_PWMServoDriver pcaBoard = Adafruit_PWMServoDriver(0x40);
 #define INTERFACE_ARM 2
 
 #define GRIPPER_DOORS 3
-#define GRIPPER_ARM 4
-#define GRIPPER_CONTROL 5
+#define GRIPPER_CONTROL 4
+#define GRIPPER_ARM 5
 
 #define UTILITY_ARM_1 6
 #define UTILITY_ARM_2 7
@@ -62,11 +65,11 @@ Adafruit_PWMServoDriver pcaBoard = Adafruit_PWMServoDriver(0x40);
 #define ARM_DOWN 0 // angle for arm down
 #define ARM_UP 120 // angle for arm up
 
-#define INTERFACE_ARM_MIN 90 // angle for min interface arm spin
-#define INTERFACE_ARM_MAX 0  // angle for max interface arm spin
+#define INTERFACE_ARM_MIN 0   // angle for min interface arm spin
+#define INTERFACE_ARM_MAX 180 // angle for max interface arm spin
 
-#define GRIPPER_ARM_CLOSED 0 // angle for gripper arm closed
-#define GRIPPER_ARM_OPEN 180 // angle for gripper arm open
+#define GRIPPER_ARM_CLOSED 180 // angle for gripper arm closed
+#define GRIPPER_ARM_OPEN 00    // angle for gripper arm open
 
 #define UTILITY_ARM_CLOSED 0 // angle for utility arm closed
 #define UTILITY_ARM_OPEN 180 // angle for utility arm open
@@ -75,29 +78,140 @@ Adafruit_PWMServoDriver pcaBoard = Adafruit_PWMServoDriver(0x40);
 
 #pragma endregion
 
+bool isTopUtilityArmOpen = false;
+bool isBottomUtilityArmOpen = false;
+bool isGripperArmShown = false; // flag for gripper arm
+bool isInterfaceArmShown = false;
+bool isGripperOpen = false; // flag for gripper state - closed or open
+bool isInterfaceRotated = false;
+
+Servo servo;
+
 void setup()
 {
   Serial.begin(9600);
   Serial.println("16 channel Servo test!");
   pcaBoard.begin();
-  pcaBoard.setPWMFreq(60); // Analog servos run at ~60 Hz updates
+  pcaBoard.setPWMFreq(50); // Analog servos run at ~60 Hz updates
 
-  closeInterfaceArm();
-  closeGripperArm();
+  hideInterfaceArm();
+  hideGripperArm();
+  closeBottomUtilityArm();
+  closeTopUtilityArm();
 }
 
 void loop()
 {
-  delay(2000);
+  while (Serial.available() > 0)
+  {
+    String command = Serial.readString();
 
-  // setMotorAngle(INTERFACE_CONTROL, INTERFACE_ARM_MAX);
-  // setMotorAngle(INTERFACE_ARM, ARM_UP);
-  // delay(DOORS_DELAY);
-  // setMotorAngle(INTERFACE_DOORS, DOORS_OPEN);
+    if (command == TOGGLE_GRIPPER_ARM)
+    {
+      handleToggleGripperArmCommand();
+    }
+    else if (command == TOGGLE_INTERFACE_ARM)
+    {
+      handleToggleInterfaceArmCommand();
+    }
+    else if (command == TOGGLE_UTILITY_ARM_1)
+    {
+      handleToggleUtilityArm1Command();
+    }
+    else if (command == TOGGLE_UTILITY_ARM_2)
+    {
+      handleToggleUtilityArm2Command();
+    }
+    else if (command == CONTROL_GRIPPER)
+    {
+      handleControlGripperCommand();
+    }
+    else if (command == ROTATE_INTERFACE_ARM)
+    {
+      handleControlInterfaceCommand();
+    }
+  }
+}
 
-  // openInterfaceArm();
-  // delay(2000);
-  closeInterfaceArm();
+void handleToggleGripperArmCommand()
+{
+  if (isGripperArmShown)
+  {
+    hideGripperArm();
+  }
+  else
+  {
+    showGripperArm();
+  }
+}
+
+void handleToggleInterfaceArmCommand()
+{
+  if (isInterfaceArmShown)
+  {
+    hideInterfaceArm();
+  }
+  else
+  {
+    showInterfaceArm();
+  }
+}
+
+void handleToggleUtilityArm1Command()
+{
+  if (isTopUtilityArmOpen)
+  {
+    closeTopUtilityArm();
+  }
+  else
+  {
+    openTopUtilityArm();
+  }
+}
+
+void handleToggleUtilityArm2Command()
+{
+  if (isBottomUtilityArmOpen)
+  {
+    closeBottomUtilityArm();
+  }
+  else
+  {
+    openBottomUtilityArm();
+  }
+}
+
+void handleControlGripperCommand()
+{
+  if (!isGripperArmShown)
+  {
+    return;
+  }
+  if (isGripperOpen)
+  {
+    closeGripper();
+  }
+  else
+  {
+    openGripper();
+  }
+}
+
+void handleControlInterfaceCommand()
+{
+  if (!isInterfaceArmShown)
+  {
+    return;
+  }
+
+  if (isInterfaceRotated)
+  {
+    rotateInInterfaceArm();
+  }
+  else
+  {
+    rotateOutInterfaceArm();
+  }
 }
 
 int angleToPulse(int ang) // gets angle in degree and returns the pulse width
@@ -111,32 +225,84 @@ void setMotorAngle(int motor, int angle)
   pcaBoard.setPWM(motor, 0, angleToPulse(angle));
 }
 
-void closeInterfaceArm()
+void hideInterfaceArm()
 {
-  setMotorAngle(INTERFACE_CONTROL, INTERFACE_ARM_MIN);
+  isInterfaceArmShown = false;
+  rotateInInterfaceArm();
   setMotorAngle(INTERFACE_ARM, ARM_DOWN);
   delay(DOORS_DELAY);
   setMotorAngle(INTERFACE_DOORS, DOORS_CLOSE);
 }
 
-void openInterfaceArm()
+void showInterfaceArm()
 {
+  isInterfaceArmShown = true;
   setMotorAngle(INTERFACE_DOORS, DOORS_OPEN);
   delay(DOORS_DELAY);
   setMotorAngle(INTERFACE_ARM, ARM_UP);
 }
 
-void closeGripperArm()
+void rotateOutInterfaceArm()
 {
-  setMotorAngle(GRIPPER_CONTROL, GRIPPER_ARM_CLOSED);
+  isInterfaceRotated = true;
+  setMotorAngle(INTERFACE_CONTROL, INTERFACE_ARM_MAX);
+}
+
+void rotateInInterfaceArm()
+{
+  isInterfaceRotated = false;
+  setMotorAngle(INTERFACE_CONTROL, INTERFACE_ARM_MIN);
+}
+
+void showGripperArm()
+{
+  isGripperArmShown = true;
+  setMotorAngle(GRIPPER_DOORS, DOORS_OPEN);
+  delay(DOORS_DELAY);
+  setMotorAngle(GRIPPER_ARM, ARM_UP);
+}
+
+void hideGripperArm()
+{
+  isGripperArmShown = false;
+  closeGripper();
   setMotorAngle(GRIPPER_ARM, ARM_DOWN);
   delay(DOORS_DELAY);
   setMotorAngle(GRIPPER_DOORS, DOORS_CLOSE);
 }
 
-void openGripperArm()
+void openGripper()
 {
-  setMotorAngle(GRIPPER_DOORS, DOORS_OPEN);
-  delay(DOORS_DELAY);
-  setMotorAngle(GRIPPER_ARM, ARM_UP);
+  isGripperOpen = true;
+  setMotorAngle(GRIPPER_CONTROL, GRIPPER_ARM_OPEN);
+}
+
+void closeGripper()
+{
+  isGripperOpen = false;
+  setMotorAngle(GRIPPER_CONTROL, GRIPPER_ARM_CLOSED);
+}
+
+void openTopUtilityArm()
+{
+  isTopUtilityArmOpen = true;
+  setMotorAngle(UTILITY_ARM_1, UTILITY_ARM_OPEN);
+}
+
+void closeTopUtilityArm()
+{
+  isTopUtilityArmOpen = false;
+  setMotorAngle(UTILITY_ARM_1, UTILITY_ARM_CLOSED);
+}
+
+void openBottomUtilityArm()
+{
+  isBottomUtilityArmOpen = true;
+  setMotorAngle(UTILITY_ARM_2, UTILITY_ARM_OPEN);
+}
+
+void closeBottomUtilityArm()
+{
+  isBottomUtilityArmOpen = false;
+  setMotorAngle(UTILITY_ARM_2, UTILITY_ARM_CLOSED);
 }
