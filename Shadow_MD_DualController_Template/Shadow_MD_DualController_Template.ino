@@ -3304,7 +3304,7 @@ bool handleSoundModuleControl()
     }
   }
 
-  if (PS3NavDome->getButtonPress(L1))
+  if (PS3NavDome->PS3NavigationConnected && PS3NavDome->getButtonPress(L1))
   {
     if (PS3NavFoot->getButtonClick(LEFT))
     {
@@ -3362,14 +3362,14 @@ bool handleBodyMasterControl()
   if (PS3NavFoot->getButtonClick(UP))
   {
     addStringToOutput("FOOT: Up click");
-    BodyMasterSerial->write(TOGGLE_UTILITY_ARM_1);
+    BodyMasterSerial->write(TOGGLE_UTILITY_ARM_TOP);
     return true;
   }
 
   if (PS3NavFoot->getButtonClick(DOWN))
   {
     addStringToOutput("FOOT: Down click");
-    BodyMasterSerial->write(TOGGLE_UTILITY_ARM_2);
+    BodyMasterSerial->write(TOGGLE_UTILITY_ARM_DOWN);
     return true;
   }
 

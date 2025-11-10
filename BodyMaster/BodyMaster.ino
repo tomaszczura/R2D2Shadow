@@ -1,6 +1,6 @@
+#include <Adafruit_PWMServoDriver.h>
 #include <Servo.h>
 
-#include <Adafruit_PWMServoDriver.h>
 #include "R2D2Commands.h"
 
 /** Marcduino port mapping
@@ -56,23 +56,26 @@ Adafruit_PWMServoDriver pcaBoard = Adafruit_PWMServoDriver(0x40);
 #define GRIPPER_CONTROL 4
 #define GRIPPER_ARM 5
 
-#define UTILITY_ARM_1 6
-#define UTILITY_ARM_2 7
+#define UTILITY_ARM_TOP 6
+#define UTILITY_ARM_DOWN 7
 
-#define DOORS_CLOSE 90 // angle for doors close
-#define DOORS_OPEN 0   // angle for doors open
+#define INT_DOORS_CLOSE 132 // angle for interface doors close
+#define INT_DOORS_OPEN 0    // angle for interface doors open
+
+#define GRIP_DOORS_CLOSE 25 // angle for interface doors close
+#define GRIP_DOORS_OPEN 130 // angle for interface doors open
 
 #define ARM_DOWN 0 // angle for arm down
-#define ARM_UP 120 // angle for arm up
+#define ARM_UP 180 // angle for arm up
 
-#define INTERFACE_ARM_MIN 0   // angle for min interface arm spin
+#define INTERFACE_ARM_MIN 15  // angle for min interface arm spin
 #define INTERFACE_ARM_MAX 180 // angle for max interface arm spin
 
-#define GRIPPER_ARM_CLOSED 180 // angle for gripper arm closed
-#define GRIPPER_ARM_OPEN 00    // angle for gripper arm open
+#define GRIPPER_ARM_CLOSED 110 // angle for gripper arm closed
+#define GRIPPER_ARM_OPEN 50    // angle for gripper arm open
 
 #define UTILITY_ARM_CLOSED 0 // angle for utility arm closed
-#define UTILITY_ARM_OPEN 180 // angle for utility arm open
+#define UTILITY_ARM_OPEN 120 // angle for utility arm open
 
 #define DOORS_DELAY 1000 // delay for door close
 
@@ -98,11 +101,13 @@ void setup()
   hideGripperArm();
   closeBottomUtilityArm();
   closeTopUtilityArm();
+
+  setMotorAngle(INTERFACE_DOORS, INT_DOORS_OPEN);
 }
 
 void loop()
 {
-  while (Serial.available() > 0)
+  // while (Serial.available() > 0)
   {
     String command = Serial.readString();
 
@@ -114,11 +119,11 @@ void loop()
     {
       handleToggleInterfaceArmCommand();
     }
-    else if (command == TOGGLE_UTILITY_ARM_1)
+    else if (command == TOGGLE_UTILITY_ARM_TOP)
     {
       handleToggleUtilityArm1Command();
     }
-    else if (command == TOGGLE_UTILITY_ARM_2)
+    else if (command == TOGGLE_UTILITY_ARM_DOWN)
     {
       handleToggleUtilityArm2Command();
     }
@@ -231,13 +236,13 @@ void hideInterfaceArm()
   rotateInInterfaceArm();
   setMotorAngle(INTERFACE_ARM, ARM_DOWN);
   delay(DOORS_DELAY);
-  setMotorAngle(INTERFACE_DOORS, DOORS_CLOSE);
+  setMotorAngle(INTERFACE_DOORS, INT_DOORS_CLOSE);
 }
 
 void showInterfaceArm()
 {
   isInterfaceArmShown = true;
-  setMotorAngle(INTERFACE_DOORS, DOORS_OPEN);
+  setMotorAngle(INTERFACE_DOORS, INT_DOORS_OPEN);
   delay(DOORS_DELAY);
   setMotorAngle(INTERFACE_ARM, ARM_UP);
 }
@@ -257,7 +262,7 @@ void rotateInInterfaceArm()
 void showGripperArm()
 {
   isGripperArmShown = true;
-  setMotorAngle(GRIPPER_DOORS, DOORS_OPEN);
+  setMotorAngle(GRIPPER_DOORS, GRIP_DOORS_OPEN);
   delay(DOORS_DELAY);
   setMotorAngle(GRIPPER_ARM, ARM_UP);
 }
@@ -265,10 +270,10 @@ void showGripperArm()
 void hideGripperArm()
 {
   isGripperArmShown = false;
-  closeGripper();
   setMotorAngle(GRIPPER_ARM, ARM_DOWN);
+  closeGripper();
   delay(DOORS_DELAY);
-  setMotorAngle(GRIPPER_DOORS, DOORS_CLOSE);
+  setMotorAngle(GRIPPER_DOORS, GRIP_DOORS_CLOSE);
 }
 
 void openGripper()
@@ -286,23 +291,23 @@ void closeGripper()
 void openTopUtilityArm()
 {
   isTopUtilityArmOpen = true;
-  setMotorAngle(UTILITY_ARM_1, UTILITY_ARM_OPEN);
+  setMotorAngle(UTILITY_ARM_TOP, UTILITY_ARM_OPEN);
 }
 
 void closeTopUtilityArm()
 {
   isTopUtilityArmOpen = false;
-  setMotorAngle(UTILITY_ARM_1, UTILITY_ARM_CLOSED);
+  setMotorAngle(UTILITY_ARM_TOP, UTILITY_ARM_CLOSED);
 }
 
 void openBottomUtilityArm()
 {
   isBottomUtilityArmOpen = true;
-  setMotorAngle(UTILITY_ARM_2, UTILITY_ARM_OPEN);
+  setMotorAngle(UTILITY_ARM_DOWN, UTILITY_ARM_OPEN);
 }
 
 void closeBottomUtilityArm()
 {
   isBottomUtilityArmOpen = false;
-  setMotorAngle(UTILITY_ARM_2, UTILITY_ARM_CLOSED);
+  setMotorAngle(UTILITY_ARM_DOWN, UTILITY_ARM_CLOSED);
 }
